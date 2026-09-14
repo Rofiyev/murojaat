@@ -1,0 +1,11 @@
+.git
+.idea
+env
+__pycache__
+*.pyc
+*.pyo
+*.log
+.env
+staticfiles
+mobile-android/.gradle
+mobile-android/app/build

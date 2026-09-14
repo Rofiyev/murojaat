@@ -1,0 +1,16 @@
+.env
+.venv/
+env/
+.idea/
+__pycache__/
+*.py[cod]
+*.log
+staticfiles/
+*.sqlite3
+*.sqlite3-*
+deployment_seed.json
+media/
+mobile-android/.gradle/
+mobile-android/local.properties
+mobile-android/app/build/
+.DS_Store

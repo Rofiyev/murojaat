@@ -1,1 +1,0 @@
-{"name":"murojaat","version":"1.0.1","private":true,"scripts":{"build":"rm -rf dist && mkdir dist && cp index.html app.css app.js portal.html portal.js manifest.webmanifest sw.js dist/"}}

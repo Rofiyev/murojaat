@@ -1,0 +1,27 @@
+{% extends 'users/base.html' %}
+{% block title %}Parolni unutdingizmi{% endblock title %}
+{% block content %}
+<div class="card shadow-lg">
+  <div class="card-body p-5">
+    {% if send_email_succes %}
+      <div class="alert alert-success" role="alert">Agar bu email tizimda mavjud bo‘lsa, parolni tiklash havolasi yuborildi.</div>
+    {% endif %}
+    {% for message in messages %}
+      <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-{{ message.tags|default:'info' }}{% endif %}" role="alert">{{ message }}</div>
+    {% endfor %}
+    <h1 class="fs-4 card-title fw-bold mb-4">Parolni tiklash</h1>
+    <form method="POST" class="needs-validation" novalidate autocomplete="off">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="mb-2 text-muted" for="email">Email manzil</label>
+        <input id="email" type="email" class="form-control" name="email" required autofocus autocomplete="email" />
+        <div class="invalid-feedback">Email manzilni to‘g‘ri kiriting.</div>
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Tiklash havolasini yuborish</button>
+    </form>
+  </div>
+  <div class="card-footer py-3 border-0 text-center">
+    <a href="{% url 'login' %}" class="text-dark">Kirish sahifasiga qaytish</a>
+  </div>
+</div>
+{% endblock content %}

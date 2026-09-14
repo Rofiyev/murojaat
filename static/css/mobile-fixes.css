@@ -1,0 +1,22 @@
+/* Mobile/responsive fixes for the server UI and Android WebView. */
+html, body { max-width: 100%; overflow-x: hidden; }
+img { max-width: 100%; height: auto; }
+.form-control, .form-select, .btn { min-height: 44px; }
+textarea.form-control { min-height: 110px; }
+.appointments, .appointment-list, .recent .table-div > div { max-width: 100%; }
+@media (max-width: 767.98px) {
+  main { padding-left: 12px !important; padding-right: 12px !important; }
+  .dash-title { font-size: 1.35rem; line-height: 1.25; }
+  .table-div { overflow-x: auto; padding: 10px !important; }
+  .appointments { width: 100% !important; }
+  .appointment-list { width: 100% !important; display: block !important; padding: 14px !important; }
+  .profile-info-widget { width: 100%; align-items: flex-start; }
+  .appointment-action { margin-top: 12px; width: 100%; }
+  .appointment-action .btn { width: 100%; }
+  .filter-section form { display: block !important; }
+  .filter-section .form-group { margin: 0 0 10px !important; width: 100%; }
+  .modal-dialog { margin: .5rem; }
+  .modal-content { border-radius: 14px; }
+  .sidebar { max-width: 86vw; }
+  table { font-size: .9rem; }
+}

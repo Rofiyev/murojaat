@@ -1,1 +1,9 @@
-{"buildCommand":"npm run build","outputDirectory":"dist","cleanUrls":true}
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "hospital/wsgi.py": {
+      "maxDuration": 60,
+      "excludeFiles": "{screenshots/**,mobile-android/**,TEST_REPORT.md,README*.md,render.yaml,railway.json,Dockerfile,entrypoint.sh}"
+    }
+  }
+}

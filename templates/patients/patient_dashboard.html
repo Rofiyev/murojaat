@@ -1,0 +1,41 @@
+{% extends 'patients/base.html' %}
+{% block title %}Bosh sahifa{% endblock title %}
+{% block page_title %}Bemor boshqaruv paneli{% endblock page_title %}
+{% block content %}
+<main class="container-fluid px-0">
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3"><div class="bg-white shadow-sm rounded p-3 h-100"><small class="text-muted">Jami murojaatlar</small><h2 class="mb-0">{{ total_appointments }}</h2></div></div>
+    <div class="col-6 col-lg-3"><div class="bg-white shadow-sm rounded p-3 h-100"><small class="text-muted">Kutilmoqda</small><h2 class="mb-0">{{ waited_appointments }}</h2></div></div>
+    <div class="col-6 col-lg-3"><div class="bg-white shadow-sm rounded p-3 h-100"><small class="text-muted">Qabul qilingan</small><h2 class="mb-0">{{ accepted_appointments }}</h2></div></div>
+    <div class="col-6 col-lg-3"><div class="bg-white shadow-sm rounded p-3 h-100"><small class="text-muted">Shifokor javoblari</small><h2 class="mb-0">{{ answered_appointments }}</h2></div></div>
+  </div>
+
+  <div class="bg-white shadow-sm rounded p-3">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <div><h4 class="mb-1">Yaqin qabullar</h4><small class="text-muted">Faol qabul va murojaatlaringiz.</small></div>
+      <div class="d-flex gap-2">
+        <a class="btn btn-outline-dark btn-sm" href="{% url 'my_appointments' %}">Barcha murojaatlar</a>
+        <a class="btn btn-dark btn-sm" href="{% url 'book_appointment' %}">Qabulga yozilish</a>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead><tr><th>Sana</th><th>Vaqt</th><th>Shifokor</th><th>Mavzu</th><th>Holat</th></tr></thead>
+        <tbody>
+        {% for appointment in upcoming_appointments %}
+          <tr>
+            <td>{{ appointment.start_date|date:"d.m.Y" }}</td>
+            <td>{{ appointment.time.time }}</td>
+            <td>{{ appointment.doctor.user.get_full_name|default:appointment.doctor.user.username }}</td>
+            <td>{{ appointment.summary }}</td>
+            <td><span class="badge text-bg-secondary">{{ appointment.status.status }}</span></td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5" class="text-center text-muted py-4">Yaqin faol qabul mavjud emas.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+{% endblock %}

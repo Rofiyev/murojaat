@@ -1,0 +1,32 @@
+{% extends 'users/base.html' %}
+{% block title %}Parolni tiklash{% endblock title %}
+{% block content %}
+<div class="card shadow-lg">
+  <div class="card-body p-5">
+    <h1 class="fs-4 card-title fw-bold mb-4">Parolni tiklash</h1>
+    {% for message in messages %}
+      <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-{{ message.tags|default:'info' }}{% endif %}" role="alert">{{ message }}</div>
+    {% endfor %}
+    {% if not invalid_token %}
+    <form method="POST" class="needs-validation" novalidate autocomplete="off">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="mb-2 text-muted" for="password">Yangi parol</label>
+        <input id="password" type="password" class="form-control" name="password" required autofocus autocomplete="new-password" />
+        <div class="invalid-feedback">Parolni kiriting.</div>
+      </div>
+      <div class="mb-3">
+        <label class="mb-2 text-muted" for="password-confirm">Parolni tasdiqlang</label>
+        <input id="password-confirm" type="password" class="form-control" name="conf_password" required autocomplete="new-password" />
+        <div class="invalid-feedback">Parolni qayta kiriting.</div>
+      </div>
+      <div class="d-flex align-items-center">
+        <button type="submit" class="btn btn-primary ms-auto">Parolni yangilash</button>
+      </div>
+    </form>
+    {% else %}
+      <a href="{% url 'password-reset' %}" class="btn btn-primary w-100">Yangi tiklash havolasini olish</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock content %}
