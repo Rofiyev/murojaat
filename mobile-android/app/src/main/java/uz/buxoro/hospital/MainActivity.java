@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.WindowInsets;
 import android.webkit.CookieManager;
 import android.webkit.GeolocationPermissions;
+import android.webkit.PermissionRequest;
 import android.webkit.SslErrorHandler;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -43,6 +44,7 @@ public class MainActivity extends Activity {
     private static final int FILE_CHOOSER_REQUEST = 41;
     private static final int LOCATION_PERMISSION_REQUEST = 42;
     private static final int NOTIFICATION_PERMISSION_REQUEST = 43;
+    private static final int MICROPHONE_PERMISSION_REQUEST = 44;
     private static final String APP_SERVER = "https://appeal1.netlify.app/";
     private static final String WATCH_PREFS = "buxoro_status_watch";
     private static final String WATCH_WORK = "buxoro-appointment-status-watch";
@@ -54,6 +56,7 @@ public class MainActivity extends Activity {
     private URI allowedOrigin;
     private GeolocationPermissions.Callback pendingGeoCallback;
     private String pendingGeoOrigin;
+    private PermissionRequest pendingMicRequest;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,7 +95,7 @@ public class MainActivity extends Activity {
         settings.setSavePassword(false);
         settings.setSupportZoom(false);
         settings.setGeolocationEnabled(true);
-        settings.setUserAgentString(settings.getUserAgentString() + " BuxoroTibbiyotApp/2.1");
+        settings.setUserAgentString(settings.getUserAgentString() + " BuxoroTibbiyotApp/2.2");
         if (Build.VERSION.SDK_INT >= 26) settings.setSafeBrowsingEnabled(true);
         CookieManager cookies = CookieManager.getInstance();
         cookies.setAcceptCookie(true);
@@ -116,6 +119,18 @@ public class MainActivity extends Activity {
                 pendingGeoCallback = callback; pendingGeoOrigin = origin;
                 requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION_REQUEST);
             }
+            @Override public void onPermissionRequest(PermissionRequest request) {
+                runOnUiThread(() -> {
+                    if (request == null || request.getOrigin() == null || !isTrustedOrigin(request.getOrigin().toString())) { if (request != null) request.deny(); return; }
+                    boolean wantsAudio = false;
+                    for (String resource : request.getResources()) if (PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(resource)) { wantsAudio = true; break; }
+                    if (!wantsAudio) { request.deny(); return; }
+                    if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) { request.grant(new String[]{PermissionRequest.RESOURCE_AUDIO_CAPTURE}); return; }
+                    pendingMicRequest = request;
+                    requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, MICROPHONE_PERMISSION_REQUEST);
+                });
+            }
+            @Override public void onPermissionRequestCanceled(PermissionRequest request) { if (pendingMicRequest == request) pendingMicRequest = null; }
         });
     }
 
@@ -158,13 +173,18 @@ public class MainActivity extends Activity {
     private int effectivePort(Uri uri) { int port = uri.getPort(); return port == -1 ? ("https".equalsIgnoreCase(uri.getScheme()) ? 443 : 80) : port; }
     private int effectivePort(URI uri) { int port = uri.getPort(); return port == -1 ? ("https".equalsIgnoreCase(uri.getScheme()) ? 443 : 80) : port; }
     private void loadServer() { offlineView.setVisibility(View.GONE); webView.setVisibility(View.VISIBLE); webView.loadUrl(APP_SERVER); }
-    private void showOffline() { progress.setVisibility(View.GONE); webView.setVisibility(View.GONE); offlineView.setVisibility(View.VISIBLE); }
+    private void showOffline() { progress.setVisibility(View.GONE); webView.setVisibility(View.VISIBLE); offlineView.setVisibility(View.VISIBLE); }
 
     @Override public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == LOCATION_PERMISSION_REQUEST && pendingGeoCallback != null) {
             boolean granted = false; for (int result : grantResults) if (result == PackageManager.PERMISSION_GRANTED) { granted = true; break; }
             pendingGeoCallback.invoke(pendingGeoOrigin, granted, false); pendingGeoCallback = null; pendingGeoOrigin = null;
+        }
+        if (requestCode == MICROPHONE_PERMISSION_REQUEST && pendingMicRequest != null) {
+            boolean granted = grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED;
+            if (granted) pendingMicRequest.grant(new String[]{PermissionRequest.RESOURCE_AUDIO_CAPTURE}); else pendingMicRequest.deny();
+            pendingMicRequest = null;
         }
     }
     @Override @SuppressWarnings("deprecation") protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -175,6 +195,7 @@ public class MainActivity extends Activity {
     @Override protected void onDestroy() {
         if (fileCallback != null) { fileCallback.onReceiveValue(null); fileCallback = null; }
         if (pendingGeoCallback != null) { pendingGeoCallback.invoke(pendingGeoOrigin, false, false); pendingGeoCallback = null; }
+        if (pendingMicRequest != null) { pendingMicRequest.deny(); pendingMicRequest = null; }
         if (webView != null) { webView.stopLoading(); webView.setWebChromeClient(null); webView.setWebViewClient(null); webView.destroy(); }
         super.onDestroy();
     }
