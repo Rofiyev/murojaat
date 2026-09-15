@@ -32,6 +32,7 @@ public class MainActivity extends Activity {
     private static final int FILE_CHOOSER_REQUEST = 41;
     private static final String PREFS = "hospital_mobile";
     private static final String PREF_SERVER = "server_url";
+    private static final String DEFAULT_SERVER = "https://appeal1.netlify.app/";
 
     private WebView webView;
     private ProgressBar progress;
@@ -58,18 +59,18 @@ public class MainActivity extends Activity {
         serverButton.setOnClickListener(v -> showServerDialog(false));
         retryButton.setOnClickListener(v -> loadServer());
 
-        String saved = preferences.getString(PREF_SERVER, "");
-        if (saved.isEmpty()) {
-            showServerDialog(true);
-        } else {
-            setAllowedOrigin(saved);
-            loadServer();
+        String saved = preferences.getString(PREF_SERVER, DEFAULT_SERVER);
+        if (saved == null || saved.isEmpty()) {
+            saved = DEFAULT_SERVER;
+            preferences.edit().putString(PREF_SERVER, saved).apply();
         }
+        setAllowedOrigin(saved);
+        loadServer();
     }
 
     private void configureWebView() {
         WebSettings settings = webView.getSettings();
-        settings.setJavaScriptEnabled(true); // Required by Bootstrap/UI; no JS bridge is exposed.
+        settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
         settings.setAllowFileAccess(false);
         settings.setAllowContentAccess(false);
@@ -104,7 +105,7 @@ public class MainActivity extends Activity {
 
             @Override
             public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
-                handler.cancel(); // Never bypass certificate errors.
+                handler.cancel();
                 showOffline();
                 Toast.makeText(MainActivity.this, "SSL sertifikat xatosi. Ulanish bloklandi.", Toast.LENGTH_LONG).show();
             }
@@ -161,13 +162,13 @@ public class MainActivity extends Activity {
     private void showServerDialog(boolean required) {
         EditText input = new EditText(this);
         input.setSingleLine(true);
-        input.setHint("https://hospital.example.uz");
-        input.setText(preferences.getString(PREF_SERVER, ""));
+        input.setHint(DEFAULT_SERVER);
+        input.setText(preferences.getString(PREF_SERVER, DEFAULT_SERVER));
         input.setSelectAllOnFocus(true);
 
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle("Server manzili")
-                .setMessage("Faqat HTTPS manzil kiriting. Ilova shu server bilan internet orqali ishlaydi.")
+                .setMessage("Asosiy server: " + DEFAULT_SERVER + "\nFaqat HTTPS manzil qabul qilinadi.")
                 .setView(input)
                 .setPositiveButton("Saqlash", null)
                 .setNegativeButton(required ? "Chiqish" : "Bekor qilish", (d, w) -> { if (required) finish(); })
@@ -177,7 +178,7 @@ public class MainActivity extends Activity {
         dialog.setOnShowListener(v -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v2 -> {
             String normalized = normalizeHttpsUrl(input.getText().toString());
             if (normalized == null) {
-                input.setError("Masalan: https://hospital.example.uz");
+                input.setError("Masalan: " + DEFAULT_SERVER);
                 return;
             }
             preferences.edit().putString(PREF_SERVER, normalized).apply();
@@ -212,11 +213,12 @@ public class MainActivity extends Activity {
     }
 
     private void loadServer() {
-        String server = preferences.getString(PREF_SERVER, "");
-        if (server.isEmpty()) {
-            showServerDialog(true);
-            return;
+        String server = preferences.getString(PREF_SERVER, DEFAULT_SERVER);
+        if (server == null || server.isEmpty()) {
+            server = DEFAULT_SERVER;
+            preferences.edit().putString(PREF_SERVER, server).apply();
         }
+        setAllowedOrigin(server);
         offlineView.setVisibility(View.GONE);
         webView.setVisibility(View.VISIBLE);
         webView.loadUrl(server);
