@@ -1,15 +1,15 @@
 package uz.buxoro.hospital;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.net.http.SslError;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.view.WindowInsets;
 import android.webkit.CookieManager;
 import android.webkit.SslErrorHandler;
 import android.webkit.ValueCallback;
@@ -20,9 +20,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import java.net.URI;
@@ -30,15 +28,11 @@ import java.net.URISyntaxException;
 
 public class MainActivity extends Activity {
     private static final int FILE_CHOOSER_REQUEST = 41;
-    private static final String PREFS = "hospital_mobile";
-    private static final String PREF_SERVER = "server_url";
-    private static final String DEFAULT_SERVER = "https://appeal1.netlify.app/";
+    private static final String APP_SERVER = "https://appeal1.netlify.app/";
 
     private WebView webView;
     private ProgressBar progress;
     private View offlineView;
-    private TextView serverLabel;
-    private SharedPreferences preferences;
     private ValueCallback<Uri[]> fileCallback;
     private URI allowedOrigin;
 
@@ -46,26 +40,28 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        applySystemBarInsets();
 
-        preferences = getSharedPreferences(PREFS, MODE_PRIVATE);
         webView = findViewById(R.id.webView);
         progress = findViewById(R.id.progress);
         offlineView = findViewById(R.id.offlineView);
-        serverLabel = findViewById(R.id.serverLabel);
-        Button serverButton = findViewById(R.id.serverButton);
         Button retryButton = findViewById(R.id.retryButton);
 
+        try { allowedOrigin = new URI(APP_SERVER); } catch (URISyntaxException ignored) { }
         configureWebView();
-        serverButton.setOnClickListener(v -> showServerDialog(false));
         retryButton.setOnClickListener(v -> loadServer());
-
-        String saved = preferences.getString(PREF_SERVER, DEFAULT_SERVER);
-        if (saved == null || saved.isEmpty()) {
-            saved = DEFAULT_SERVER;
-            preferences.edit().putString(PREF_SERVER, saved).apply();
-        }
-        setAllowedOrigin(saved);
         loadServer();
+    }
+
+    private void applySystemBarInsets() {
+        if (Build.VERSION.SDK_INT >= 35) {
+            View root = findViewById(R.id.rootView);
+            root.setOnApplyWindowInsetsListener((v, insets) -> {
+                android.graphics.Insets bars = insets.getInsets(WindowInsets.Type.systemBars());
+                v.setPadding(bars.left, bars.top, bars.right, bars.bottom);
+                return insets;
+            });
+        }
     }
 
     private void configureWebView() {
@@ -76,15 +72,13 @@ public class MainActivity extends Activity {
         settings.setAllowContentAccess(false);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         settings.setSavePassword(false);
-        settings.setSupportZoom(true);
-        settings.setBuiltInZoomControls(false);
-        if (android.os.Build.VERSION.SDK_INT >= 26) {
-            settings.setSafeBrowsingEnabled(true);
-        }
+        settings.setSupportZoom(false);
+        settings.setUserAgentString(settings.getUserAgentString() + " BuxoroTibbiyotApp/2.0");
+        if (Build.VERSION.SDK_INT >= 26) settings.setSafeBrowsingEnabled(true);
 
-        CookieManager cookieManager = CookieManager.getInstance();
-        cookieManager.setAcceptCookie(true);
-        cookieManager.setAcceptThirdPartyCookies(webView, false);
+        CookieManager cookies = CookieManager.getInstance();
+        cookies.setAcceptCookie(true);
+        cookies.setAcceptThirdPartyCookies(webView, false);
 
         webView.setWebViewClient(new WebViewClient() {
             @Override
@@ -107,7 +101,7 @@ public class MainActivity extends Activity {
             public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
                 handler.cancel();
                 showOffline();
-                Toast.makeText(MainActivity.this, "SSL sertifikat xatosi. Ulanish bloklandi.", Toast.LENGTH_LONG).show();
+                Toast.makeText(MainActivity.this, "Xavfsiz ulanishni tekshirib bo‘lmadi.", Toast.LENGTH_LONG).show();
             }
         });
 
@@ -119,11 +113,11 @@ public class MainActivity extends Activity {
             }
 
             @Override
-            public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> uploadCallback, FileChooserParams fileChooserParams) {
+            public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback, FileChooserParams params) {
                 if (fileCallback != null) fileCallback.onReceiveValue(null);
-                fileCallback = uploadCallback;
+                fileCallback = callback;
                 try {
-                    startActivityForResult(fileChooserParams.createIntent(), FILE_CHOOSER_REQUEST);
+                    startActivityForResult(params.createIntent(), FILE_CHOOSER_REQUEST);
                     return true;
                 } catch (ActivityNotFoundException ex) {
                     fileCallback = null;
@@ -136,9 +130,8 @@ public class MainActivity extends Activity {
 
     private boolean handleNavigation(Uri uri) {
         if (uri == null) return true;
-        if ("https".equalsIgnoreCase(uri.getScheme()) && allowedOrigin != null
-                && uri.getHost() != null && uri.getHost().equalsIgnoreCase(allowedOrigin.getHost())
-                && effectivePort(uri) == effectivePort(allowedOrigin)) {
+        if ("https".equalsIgnoreCase(uri.getScheme()) && allowedOrigin != null && uri.getHost() != null
+                && uri.getHost().equalsIgnoreCase(allowedOrigin.getHost()) && effectivePort(uri) == effectivePort(allowedOrigin)) {
             return false;
         }
         try {
@@ -159,69 +152,10 @@ public class MainActivity extends Activity {
         return port == -1 ? ("https".equalsIgnoreCase(uri.getScheme()) ? 443 : 80) : port;
     }
 
-    private void showServerDialog(boolean required) {
-        EditText input = new EditText(this);
-        input.setSingleLine(true);
-        input.setHint(DEFAULT_SERVER);
-        input.setText(preferences.getString(PREF_SERVER, DEFAULT_SERVER));
-        input.setSelectAllOnFocus(true);
-
-        AlertDialog dialog = new AlertDialog.Builder(this)
-                .setTitle("Server manzili")
-                .setMessage("Asosiy server: " + DEFAULT_SERVER + "\nFaqat HTTPS manzil qabul qilinadi.")
-                .setView(input)
-                .setPositiveButton("Saqlash", null)
-                .setNegativeButton(required ? "Chiqish" : "Bekor qilish", (d, w) -> { if (required) finish(); })
-                .setCancelable(!required)
-                .create();
-
-        dialog.setOnShowListener(v -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v2 -> {
-            String normalized = normalizeHttpsUrl(input.getText().toString());
-            if (normalized == null) {
-                input.setError("Masalan: " + DEFAULT_SERVER);
-                return;
-            }
-            preferences.edit().putString(PREF_SERVER, normalized).apply();
-            setAllowedOrigin(normalized);
-            dialog.dismiss();
-            loadServer();
-        }));
-        dialog.show();
-    }
-
-    private String normalizeHttpsUrl(String raw) {
-        try {
-            String value = raw == null ? "" : raw.trim();
-            URI uri = new URI(value);
-            if (!"https".equalsIgnoreCase(uri.getScheme()) || uri.getHost() == null || uri.getUserInfo() != null) return null;
-            String path = uri.getPath();
-            if (path == null || path.isEmpty()) path = "/";
-            if (!path.endsWith("/")) path += "/";
-            return new URI("https", null, uri.getHost(), uri.getPort(), path, null, null).toString();
-        } catch (URISyntaxException e) {
-            return null;
-        }
-    }
-
-    private void setAllowedOrigin(String url) {
-        try {
-            allowedOrigin = new URI(url);
-            serverLabel.setText(allowedOrigin.getHost());
-        } catch (URISyntaxException e) {
-            allowedOrigin = null;
-        }
-    }
-
     private void loadServer() {
-        String server = preferences.getString(PREF_SERVER, DEFAULT_SERVER);
-        if (server == null || server.isEmpty()) {
-            server = DEFAULT_SERVER;
-            preferences.edit().putString(PREF_SERVER, server).apply();
-        }
-        setAllowedOrigin(server);
         offlineView.setVisibility(View.GONE);
         webView.setVisibility(View.VISIBLE);
-        webView.loadUrl(server);
+        webView.loadUrl(APP_SERVER);
     }
 
     private void showOffline() {
@@ -242,12 +176,14 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public void onBackPressed() {
-        if (webView.canGoBack()) webView.goBack(); else super.onBackPressed();
+        if (webView != null && webView.canGoBack()) webView.goBack(); else super.onBackPressed();
     }
 
     @Override
     protected void onDestroy() {
+        if (fileCallback != null) { fileCallback.onReceiveValue(null); fileCallback = null; }
         if (webView != null) {
             webView.stopLoading();
             webView.setWebChromeClient(null);
