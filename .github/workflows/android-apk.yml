@@ -6,6 +6,7 @@ on:
       - 'mobile-android/**'
       - '.github/workflows/android-apk.yml'
 
+# APK default server: https://appeal1.netlify.app/
 jobs:
   build:
     runs-on: ubuntu-latest
