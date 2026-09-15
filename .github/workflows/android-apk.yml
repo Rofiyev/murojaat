@@ -1,9 +1,41 @@
-name: Build Android APK
+name: Build Android Play artifacts
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - 'mobile-android/**'
+      - '.github/workflows/android-apk.yml'
 
+# Production server: https://appeal1.netlify.app/
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile-android
     steps:
-      - run: echo "Android source update in progress"
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Prepare Android SDK 36
+        run: |
+          SDKMANAGER=/usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" "platforms;android-36" "build-tools;36.0.0" "platform-tools"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.6.0'
+      - name: Build debug APK
+        run: gradle assembleDebug --no-daemon
+      - name: Build release AAB
+        run: gradle bundleRelease --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: buxoro-tibbiyot-appeal1-apk
+          path: mobile-android/app/build/outputs/apk/debug/app-debug.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: buxoro-tibbiyot-play-aab-unsigned
+          path: mobile-android/app/build/outputs/bundle/release/app-release.aab
