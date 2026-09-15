@@ -1,69 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rootView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:background="#F6F8FB">
 
-    <LinearLayout
+    <WebView
+        android:id="@+id/webView"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingStart="16dp"
-        android:paddingEnd="8dp">
-        <TextView
-            android:id="@+id/serverLabel"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:text="Hospital Management"
-            android:textSize="16sp"
-            android:textStyle="bold" />
-        <Button
-            android:id="@+id/serverButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Server" />
-    </LinearLayout>
+        android:layout_height="match_parent" />
 
     <ProgressBar
         android:id="@+id/progress"
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
         android:layout_height="3dp"
-        android:max="100" />
+        android:layout_gravity="top"
+        android:max="100"
+        android:progressTint="#0EA5E9" />
 
-    <FrameLayout
+    <LinearLayout
+        android:id="@+id/offlineView"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
-        <WebView
-            android:id="@+id/webView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-        <LinearLayout
-            android:id="@+id/offlineView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+        android:layout_height="match_parent"
+        android:background="#F6F8FB"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="32dp"
+        android:visibility="gone">
+        <ImageView
+            android:layout_width="84dp"
+            android:layout_height="84dp"
+            android:contentDescription="@null"
+            android:src="@drawable/app_icon" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="22dp"
             android:gravity="center"
-            android:orientation="vertical"
-            android:padding="32dp"
-            android:visibility="gone">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="Internet yoki server bilan aloqa yo‘q.\nUlanishni tekshirib qayta urinib ko‘ring."
-                android:textSize="18sp" />
-            <Button
-                android:id="@+id/retryButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:text="Qayta urinish" />
-        </LinearLayout>
-    </FrameLayout>
-</LinearLayout>
+            android:text="Ulanish mavjud emas"
+            android:textColor="#102238"
+            android:textSize="21sp"
+            android:textStyle="bold" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:text="Internet aloqasini tekshiring va qayta urinib ko‘ring."
+            android:textColor="#5E6D7D"
+            android:textSize="14sp" />
+        <Button
+            android:id="@+id/retryButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="22dp"
+            android:text="Qayta urinish"
+            android:textAllCaps="false" />
+    </LinearLayout>
+</FrameLayout>
