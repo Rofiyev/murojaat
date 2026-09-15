@@ -1,1 +1,2 @@
-# No custom shrinking rules are required for this small WebView shell.
+# Keep the WorkManager worker instantiated by class name.
+-keep class uz.buxoro.hospital.StatusWorker { *; }
