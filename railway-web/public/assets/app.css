@@ -62,3 +62,7 @@
   .success-card{box-shadow:none!important;border:1px solid #ddd!important;margin:30px auto!important}
   .success-actions,#kioskCountdown{display:none!important}
 }
+
+.doctor-form{grid-template-columns:1.15fr 1fr 1fr auto}
+@media(max-width:900px){.doctor-form{grid-template-columns:1fr 1fr}.doctor-form .btn{grid-column:1/-1}}
+@media(max-width:620px){.doctor-form{grid-template-columns:1fr}}
