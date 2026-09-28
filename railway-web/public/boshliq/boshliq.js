@@ -70,8 +70,12 @@ function renderTable(){
 function renderInstitutions(){
   $('#institutionAdminList').innerHTML=institutions.map(i=>{
     const count=doctors.filter(d=>d.institutionId===i.id).length;
-    return `<div class="institution-row"><span><b>${esc(i.name)}</b><br><small>${count} ta faol shifokor</small></span><button class="link-btn" data-inst="${esc(i.id)}">O‘chirish</button></div>`;
+    return `<div class="institution-row"><span><b>${esc(i.name)}</b><br><small>${count} ta faol shifokor</small></span><span class="institution-actions"><button class="link-btn" data-kiosk="${esc(i.id)}">Kiosk havola</button><button class="link-btn" data-inst="${esc(i.id)}">O‘chirish</button></span></div>`;
   }).join('')||'<p class="muted">Muassasalar yo‘q.</p>';
+  $('#institutionAdminList').querySelectorAll('[data-kiosk]').forEach(b=>b.onclick=async()=>{
+    const url=`${location.origin}/kiosk/?institution=${encodeURIComponent(b.dataset.kiosk)}`;
+    try{await navigator.clipboard.writeText(url);const old=b.textContent;b.textContent='Nusxalandi';setTimeout(()=>b.textContent=old,1600)}catch{prompt('Kiosk havolasi:',url)}
+  });
   $('#institutionAdminList').querySelectorAll('[data-inst]').forEach(b=>b.onclick=async()=>{
     if(!confirm('Muassasa ro‘yxatdan chiqarilsinmi?'))return;
     try{await api('/api/institutions/'+b.dataset.inst,{method:'DELETE'});await loadAll()}catch(e){alert(e.message)}
