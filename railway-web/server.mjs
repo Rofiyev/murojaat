@@ -366,9 +366,10 @@ app.post('/api/appointments', rateLimit('appointment', 180, 60 * 60 * 1000), upl
     const uid = randomUUID();
     const ref = `Q-${now.toISOString().slice(2, 10).replaceAll('-', '')}-${uid.slice(0, 6).toUpperCase()}`;
 
-    await pool.query('BEGIN');
+    const client = await pool.connect();
     try {
-      await pool.query(`INSERT INTO appointments(
+      await client.query('BEGIN');
+      await client.query(`INSERT INTO appointments(
         id,reference,full_name,phone,institution_id,institution_name,doctor_id,doctor_name,appointment_date,appointment_time,topic,description,status,response,need_help,
         latitude,longitude,location_accuracy,location_shared_at,audio,audio_type,audio_size,audio_duration_sec,created_at,updated_at
       ) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,'yangi','',$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$22)`, [
@@ -376,11 +377,13 @@ app.post('/api/appointments', rateLimit('appointment', 180, 60 * 60 * 1000), upl
         hasLocation ? latitude : null, hasLocation ? longitude : null, hasLocation ? accuracy : null, hasLocation ? now : null,
         audio ? audio.buffer : null, audio?.mimetype || '', audio?.size || 0, audio ? duration : null, now
       ]);
-      await pool.query("INSERT INTO appointment_events(appointment_id,event_type,new_status,note) VALUES($1,'created','yangi',$2)", [uid, topic]);
-      await pool.query('COMMIT');
+      await client.query("INSERT INTO appointment_events(appointment_id,event_type,new_status,note) VALUES($1,'created','yangi',$2)", [uid, topic]);
+      await client.query('COMMIT');
     } catch (e) {
-      await pool.query('ROLLBACK');
+      await client.query('ROLLBACK');
       throw e;
+    } finally {
+      client.release();
     }
 
     res.status(201).set('Cache-Control', 'no-store').json({
@@ -484,18 +487,21 @@ app.patch('/api/appointments/:id', async (req, res) => {
   const current = await pool.query('SELECT status,response FROM appointments WHERE id=$1 LIMIT 1', [req.params.id]);
   if (!current.rows[0]) return apiError(res, 404, 'Murojaat topilmadi.');
 
-  await pool.query('BEGIN');
+  const client = await pool.connect();
   try {
-    const { rows } = await pool.query('UPDATE appointments SET status=$1,response=$2,updated_at=NOW() WHERE id=$3 RETURNING *', [st, response, req.params.id]);
+    await client.query('BEGIN');
+    const { rows } = await client.query('UPDATE appointments SET status=$1,response=$2,updated_at=NOW() WHERE id=$3 RETURNING *', [st, response, req.params.id]);
     const old = current.rows[0];
     const type = old.status !== st ? 'status_changed' : 'response_updated';
     const note = old.response !== response ? response.slice(0, 500) : '';
-    await pool.query('INSERT INTO appointment_events(appointment_id,event_type,old_status,new_status,note) VALUES($1,$2,$3,$4,$5)', [req.params.id, type, old.status, st, note]);
-    await pool.query('COMMIT');
+    await client.query('INSERT INTO appointment_events(appointment_id,event_type,old_status,new_status,note) VALUES($1,$2,$3,$4,$5)', [req.params.id, type, old.status, st, note]);
+    await client.query('COMMIT');
     res.set('Cache-Control', 'no-store').json({ appointment: mapAppointment(rows[0], true) });
   } catch (e) {
-    await pool.query('ROLLBACK');
+    await client.query('ROLLBACK');
     throw e;
+  } finally {
+    client.release();
   }
 });
 
