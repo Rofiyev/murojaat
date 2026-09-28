@@ -1,7 +1,9 @@
 const $=(s)=>document.querySelector(s);
 const esc=(v)=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-const KIOSK=location.pathname.startsWith('/kiosk')||new URLSearchParams(location.search).get('kiosk')==='1';
+const params=new URLSearchParams(location.search);
+const KIOSK=location.pathname.startsWith('/kiosk')||params.get('kiosk')==='1';
+const LOCKED_INSTITUTION=KIOSK?(params.get('institution')||''):'';
 let institutions=[],doctors=[],voiceBlob=null,voiceUrl='',recorder=null,stream=null,timerId=null,startedAt=0,deferredPrompt=null;
 let successTimer=null,idleTimer=null,idleSeconds=0,currentReference='',currentPhone='';
 
@@ -64,7 +66,9 @@ async function loadDirectory(){
     institutions=instRes.institutions||[];doctors=docRes.doctors||[];
     const inst=$('#institutionSelect');
     inst.innerHTML='<option value="">Muassasani tanlang</option>'+institutions.map(i=>`<option value="${esc(i.id)}">${esc(i.name)}</option>`).join('');
-    renderDoctors('');
+    if(LOCKED_INSTITUTION&&institutions.some(i=>i.id===LOCKED_INSTITUTION)){
+      inst.value=LOCKED_INSTITUTION;inst.disabled=true;inst.insertAdjacentHTML('afterend','<div class="locked-institution">📍 Ushbu kiosk muassasaga biriktirilgan</div>');renderDoctors(LOCKED_INSTITUTION);
+    } else renderDoctors('');
     $('#doctorList').innerHTML=doctors.map(d=>`<article class="doctor"><div class="avatar">DR</div><h3>${esc(d.name)}</h3><p>${esc(d.specialty)}</p><small>${esc(d.institutionName)}</small></article>`).join('')||'<p>Hozircha shifokorlar ro‘yxati bo‘sh.</p>';
   }catch(e){
     $('#doctorList').innerHTML='<p>Ma’lumotlarni yuklab bo‘lmadi.</p>';
@@ -92,7 +96,9 @@ function showRecent(){
 }
 function clearPatientData(){
   $('#appointmentForm')?.reset();resetVoice();
-  $('#institutionSelect').value='';renderDoctors('');
+  if(LOCKED_INSTITUTION&&institutions.some(i=>i.id===LOCKED_INSTITUTION)){
+    $('#institutionSelect').value=LOCKED_INSTITUTION;$('#institutionSelect').disabled=true;renderDoctors(LOCKED_INSTITUTION);
+  } else {$('#institutionSelect').value='';$('#institutionSelect').disabled=false;renderDoctors('')}
   $('#locationBox').hidden=true;$('#locationStatus').textContent='Joylashuv yuborilmagan.';
   $('#counter').textContent='0 / 2000';$('#formNotice').className='notice';
   $('#statusReference').value='';$('#statusPhone').value='';$('#statusResult').innerHTML='';
@@ -117,6 +123,7 @@ async function submitAppeal(e){
   try{
     if(!$('#consent').checked)throw new Error('Maxfiylik siyosatiga rozilikni belgilang.');
     const fd=new FormData(e.currentTarget);
+    if(LOCKED_INSTITUTION)fd.set('institutionId',LOCKED_INSTITUTION);
     if(!fd.get('description')?.trim()&&!voiceBlob&&!$('#voiceFile').files[0])throw new Error('Murojaat mazmunini yozing yoki ovoz yuboring.');
     const audio=voiceBlob||$('#voiceFile').files[0];
     if(audio){
@@ -128,7 +135,8 @@ async function submitAppeal(e){
     const phone=String(fd.get('phone')||'');
     const out=await api('/api/appointments',{method:'POST',body:fd});
     saveRecent(out.reference,phone);showSuccess(out,phone);
-    e.currentTarget.reset();resetVoice();$('#locationBox').hidden=true;$('#counter').textContent='0 / 2000';renderDoctors('');
+    e.currentTarget.reset();resetVoice();$('#locationBox').hidden=true;$('#counter').textContent='0 / 2000';
+    if(LOCKED_INSTITUTION){$('#institutionSelect').value=LOCKED_INSTITUTION;$('#institutionSelect').disabled=true;renderDoctors(LOCKED_INSTITUTION)}else renderDoctors('');
   }catch(err){notice(err.message,'err')}finally{btn.disabled=false}
 }
 
@@ -164,7 +172,7 @@ function enableKiosk(){
 
 $('#menuToggle')?.addEventListener('click',()=>$('#navLinks').classList.toggle('open'));
 $('#description')?.addEventListener('input',e=>$('#counter').textContent=`${e.target.value.length} / 2000`);
-$('#institutionSelect')?.addEventListener('change',e=>renderDoctors(e.target.value));
+$('#institutionSelect')?.addEventListener('change',e=>{if(LOCKED_INSTITUTION){e.target.value=LOCKED_INSTITUTION;renderDoctors(LOCKED_INSTITUTION);return}renderDoctors(e.target.value)});
 $('#startVoice')?.addEventListener('click',startVoice);$('#stopVoice')?.addEventListener('click',stopVoice);$('#deleteVoice')?.addEventListener('click',resetVoice);
 $('#voiceFile')?.addEventListener('change',e=>{const f=e.target.files[0];if(f)showVoice(f)});
 $('#needHelp')?.addEventListener('change',e=>$('#locationBox').hidden=!e.target.checked);
