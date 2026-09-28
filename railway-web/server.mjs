@@ -270,7 +270,7 @@ async function initDb() {
 app.get('/api/health', async (_req, res) => {
   try {
     await pool.query('SELECT 1');
-    res.set('Cache-Control', 'no-store').json({ ok: true, service: 'Buxoro Tibbiyot Tizimi', version: '3.1.0', storage: 'PostgreSQL', time: new Date().toISOString() });
+    res.set('Cache-Control', 'no-store').json({ ok: true, service: 'Buxoro Tibbiyot Tizimi', version: '3.1.1', storage: 'PostgreSQL', time: new Date().toISOString() });
   } catch (e) {
     console.error(e);
     apiError(res, 503, 'Ma’lumotlar bazasi bilan aloqa yo‘q.');
@@ -539,4 +539,4 @@ app.use((err, _req, res, _next) => {
 });
 
 await initDb();
-app.listen(port, '0.0.0.0', () => console.log(`Buxoro Tibbiyot Tizimi v3.1.0 ${port}-portda ishga tushdi.`));
+app.listen(port, '0.0.0.0', () => console.log(`Buxoro Tibbiyot Tizimi v3.1.1 ${port}-portda ishga tushdi.`));
