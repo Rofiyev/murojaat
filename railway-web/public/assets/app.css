@@ -5,3 +5,60 @@
 
 @media(max-width:900px){.navlinks{display:none;position:absolute;z-index:20;top:70px;right:16px;background:#064c6e;padding:16px;border-radius:12px;flex-direction:column;align-items:stretch;gap:8px}.navlinks.open{display:flex}.menu-toggle{display:block}.hero{grid-template-columns:1fr;gap:30px;padding:65px 0}.hero h1{font-size:48px}.hero-panel{margin-bottom:30px}.doctor-grid{grid-template-columns:1fr 1fr}.stats{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:620px){.shell{width:min(100% - 20px,1180px)}.nav{min-height:70px}.brand img{width:38px;height:38px}.hero{padding:48px 0}.hero h1{font-size:35px}.hero-copy p{font-size:16px}.trust{gap:14px;flex-wrap:wrap}.section{padding:48px 0}.section-heading h2{font-size:30px}.form-card{padding:18px}.form-grid,.optional-grid{grid-template-columns:1fr}.doctor-grid{grid-template-columns:1fr}.status-form{grid-template-columns:1fr}.footer-inner{flex-direction:column;justify-content:center;gap:8px}.stats{grid-template-columns:1fr 1fr}.admin-title{align-items:flex-start;flex-direction:column}.doctor-form{grid-template-columns:1fr}.detail-grid{grid-template-columns:1fr}}
+
+
+/* v3.1 — kiosk/tablet + success + institution management */
+.doctor small{display:block;margin-top:7px;color:#8295a4}
+.success-modal{position:fixed;inset:0;background:rgba(2,27,42,.68);display:none;place-items:center;padding:20px;z-index:80}
+.success-modal.show{display:grid}
+.success-card{width:min(560px,100%);background:#fff;border-radius:24px;padding:34px;text-align:center;box-shadow:0 30px 90px rgba(0,0,0,.28)}
+.success-icon{width:72px;height:72px;border-radius:50%;display:grid;place-items:center;margin:0 auto 16px;background:#e9fbf2;color:#087a4a;font-size:38px;font-weight:900}
+.success-card h2{font-size:30px;margin:0 0 8px}
+.success-reference{font-size:30px;font-weight:900;letter-spacing:.05em;padding:16px;border-radius:14px;background:#eef8fc;color:#075985;margin:18px 0}
+.success-meta{color:#526d80}
+.success-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:22px}
+.kiosk-bar{position:sticky;top:0;z-index:70;display:flex;align-items:center;gap:16px;padding:12px 24px;background:#072f45;color:#fff;box-shadow:0 4px 18px rgba(0,0,0,.18)}
+.kiosk-bar b{font-size:15px}.kiosk-bar span{opacity:.75;font-size:13px;margin-right:auto}
+.kiosk-mode .site-header{background:#075985}
+.kiosk-mode .hero{display:none}
+.kiosk-mode .navlinks a:not([href="#murojaat"]):not([href="#holat"]),.kiosk-mode .nav-install,.kiosk-mode .nav-admin{display:none!important}
+.kiosk-mode #murojaat{padding-top:36px}
+.kiosk-mode .section-heading{text-align:center;margin-left:auto;margin-right:auto}
+.kiosk-mode .form-card{max-width:1080px;padding:34px}
+.kiosk-mode .field label,.kiosk-mode .row-title label{font-size:16px}
+.kiosk-mode .field input,.kiosk-mode .field select,.kiosk-mode .field textarea{font-size:18px;min-height:56px}
+.kiosk-mode .field textarea{min-height:180px}
+.kiosk-mode .btn{min-height:54px;font-size:17px}
+.kiosk-mode .voice,.kiosk-mode .help,.kiosk-mode .optional{padding:24px}
+.kiosk-mode .submit{min-height:62px;font-size:19px}
+.kiosk-mode #shifokorlar{display:none}
+.kiosk-mode footer{display:none}
+.kiosk-mode .status-card{max-width:900px;margin:auto}
+.institution-manage{margin-top:28px;background:white;border:1px solid #dbe7ed;border-radius:15px;padding:20px}
+.institution-form{display:grid;grid-template-columns:1fr auto;gap:10px}
+.institution-list-admin{display:grid;gap:8px;margin-top:15px}
+.institution-row{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:11px;background:#f6f9fb;border-radius:9px}
+.help-row{background:#fff7ed!important}
+.auto-refresh{display:inline-flex;align-items:center;gap:8px;color:#657d8e;font-size:13px}
+.toolbar select#institutionFilter{min-width:220px}
+.timeline{display:grid;gap:9px;margin-top:14px}
+.timeline-item{border-left:3px solid #c9e8f4;padding:8px 12px;background:#f8fbfc;border-radius:0 10px 10px 0}
+.timeline-item small{color:#718698}
+.quick-actions{display:flex;gap:8px;flex-wrap:wrap}
+.status-note{font-size:12px;color:#718698;margin-top:4px}
+
+@media(max-width:900px){
+  .kiosk-bar{padding:10px 14px;flex-wrap:wrap}.kiosk-bar span{order:3;width:100%}
+  .kiosk-mode .form-card{padding:24px}.institution-form{grid-template-columns:1fr}
+}
+@media(max-width:620px){
+  .success-card{padding:24px}.success-reference{font-size:23px}
+  .kiosk-mode .form-card{padding:16px}.kiosk-mode .field input,.kiosk-mode .field select,.kiosk-mode .field textarea{font-size:17px}
+}
+@media print{
+  body *{visibility:hidden!important}
+  .success-modal,.success-modal *{visibility:visible!important}
+  .success-modal{position:absolute!important;inset:0!important;background:#fff!important;display:block!important}
+  .success-card{box-shadow:none!important;border:1px solid #ddd!important;margin:30px auto!important}
+  .success-actions,#kioskCountdown{display:none!important}
+}
