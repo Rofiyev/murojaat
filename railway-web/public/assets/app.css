@@ -66,3 +66,7 @@
 .doctor-form{grid-template-columns:1.15fr 1fr 1fr auto}
 @media(max-width:900px){.doctor-form{grid-template-columns:1fr 1fr}.doctor-form .btn{grid-column:1/-1}}
 @media(max-width:620px){.doctor-form{grid-template-columns:1fr}}
+
+.locked-institution{margin-top:7px;padding:8px 10px;border-radius:9px;background:#e9f8fd;color:#075985;font-size:12px;font-weight:800}
+.institution-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+@media(max-width:620px){.institution-row{align-items:flex-start;flex-direction:column}.institution-actions{width:100%;justify-content:flex-start}}
