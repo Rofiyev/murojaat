@@ -3,6 +3,7 @@ const esc=(v)=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':
 
 const params=new URLSearchParams(location.search);
 const KIOSK=location.pathname.startsWith('/kiosk')||params.get('kiosk')==='1';
+const AUTO_PRINT=KIOSK&&params.get('autoprint')==='1';
 const LOCKED_INSTITUTION=KIOSK?(params.get('institution')||''):'';
 let institutions=[],doctors=[],voiceBlob=null,voiceUrl='',recorder=null,stream=null,timerId=null,startedAt=0,deferredPrompt=null;
 let successTimer=null,idleTimer=null,idleSeconds=0,currentReference='',currentPhone='',pushConfig=null;
@@ -125,6 +126,7 @@ function showSuccess(out,phone){
   $('#successMeta').innerHTML=`<b>${esc(out.institutionName||'')}</b><br>${esc(out.direction||'')} · ${esc(out.doctorName||'')}`;
   $('#successModal').classList.add('show');$('#successModal').setAttribute('aria-hidden','false');
   $('#pushStatus').textContent='';
+  if(AUTO_PRINT)setTimeout(()=>window.print(),700);
   let left=KIOSK?90:0;clearInterval(successTimer);
   if(KIOSK){
     $('#kioskCountdown').textContent='90 soniyadan keyin ekran avtomatik tozalanadi.';
@@ -163,8 +165,8 @@ async function checkStatus(e){
     const ref=$('#statusReference').value.trim(),phone=$('#statusPhone').value.trim();
     const {appointment:a}=await api(`/api/status?reference=${encodeURIComponent(ref)}&phone=${encodeURIComponent(phone)}`);
     const labels={yangi:'Yangi',jarayonda:'Jarayonda',hal_qilindi:'Hal qilingan',rad_etildi:'Rad etilgan'};
-    box.innerHTML=`<div class="status-box"><span class="badge ${esc(a.status)}">${esc(labels[a.status]||a.status)}</span><h3>${esc(a.reference)}</h3><p><b>Muassasa:</b> ${esc(a.institutionName||'—')}</p><p><b>Yo‘nalish:</b> ${esc(a.direction||'—')}</p><p><b>Shifokor:</b> ${esc(a.doctorName||'—')}</p>${a.response?`<p><b>Javob:</b> ${esc(a.response)}</p>`:''}<div class="status-actions"><button id="statusPush" class="btn secondary" type="button">🔔 Bildirishnomani yoqish</button></div><p class="muted">Yangilangan: ${new Date(a.updatedAt).toLocaleString('uz-UZ')}</p></div>`;
-    currentReference=ref;currentPhone=phone;$('#statusPush').onclick=enablePush;saveRecent(ref,phone);
+    box.innerHTML=`<div class="status-box"><span class="badge ${esc(a.status)}">${esc(labels[a.status]||a.status)}</span><h3>${esc(a.reference)}</h3><p><b>Muassasa:</b> ${esc(a.institutionName||'—')}</p><p><b>Yo‘nalish:</b> ${esc(a.direction||'—')}</p><p><b>Shifokor:</b> ${esc(a.doctorName||'—')}</p>${a.response?`<p><b>Javob:</b> ${esc(a.response)}</p>`:''}${KIOSK?'':'<div class="status-actions"><button id="statusPush" class="btn secondary" type="button">🔔 Bildirishnomani yoqish</button></div>'}<p class="muted">Yangilangan: ${new Date(a.updatedAt).toLocaleString('uz-UZ')}</p></div>`;
+    currentReference=ref;currentPhone=phone;if($('#statusPush'))$('#statusPush').onclick=enablePush;saveRecent(ref,phone);
   }catch(err){box.innerHTML=`<div class="status-box">${esc(err.message)}</div>`}
 }
 function shareLocation(){
@@ -194,7 +196,7 @@ async function enablePush(){
 }
 
 function enableKiosk(){
-  document.body.classList.add('kiosk-mode');document.title='Murojaat kioski — Buxoro Tibbiyot Tizimi';
+  document.body.classList.add('kiosk-mode');document.title='Murojaat kioski — Buxoro Tibbiyot Tizimi';if($('#enablePush'))$('#enablePush').hidden=true;
   localStorage.removeItem('buxoro-last-ref');localStorage.removeItem('buxoro-last-phone');
   document.querySelectorAll('input,textarea').forEach(x=>x.setAttribute('autocomplete','off'));
   const bar=document.createElement('div');bar.className='kiosk-bar';bar.innerHTML='<b>Infokiosk / planshet rejimi</b><span>Foydalanish tugagach ma’lumotlar avtomatik tozalanadi.</span><button id="fullScreenBtn" class="btn secondary" type="button">To‘liq ekran</button>';document.body.prepend(bar);
