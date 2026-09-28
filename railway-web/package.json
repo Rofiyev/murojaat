@@ -1,16 +1,14 @@
 {
   "name": "buxoro-tibbiyot-railway",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "private": true,
   "type": "module",
   "engines": { "node": ">=20" },
   "scripts": {
-    "prestart": "node extract-public.mjs",
     "start": "node server.mjs",
-    "check": "node --check server.mjs && node --check extract-public.mjs"
+    "check": "node --check server.mjs"
   },
   "dependencies": {
-    "adm-zip": "^0.5.16",
     "express": "^5.1.0",
     "multer": "^2.0.2",
     "pg": "^8.16.3"

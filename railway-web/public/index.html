@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#075985">
+  <meta name="description" content="Buxoro Tibbiyot Tizimi — elektron murojaat xizmati.">
+  <title>Buxoro Tibbiyot Tizimi</title>
+  <link rel="icon" href="/assets/icon_app.png">
+  <link rel="apple-touch-icon" href="/assets/icon_app.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="stylesheet" href="/assets/app.css?v=3.0.1">
+</head>
+<body>
+<a class="skip" href="#main">Asosiy mazmunga o‘tish</a>
+<header class="site-header">
+  <nav class="nav shell">
+    <a class="brand" href="/"><img src="/assets/icon_app.png" alt=""><span><strong>Buxoro Tibbiyot Tizimi</strong><small>Elektron murojaat xizmati</small></span></a>
+    <button class="menu-toggle" id="menuToggle" type="button">Menyu</button>
+    <div class="navlinks" id="navLinks">
+      <a href="#murojaat">Murojaat yuborish</a>
+      <a href="#shifokorlar">Shifokorlar</a>
+      <a href="#holat">Holatini tekshirish</a>
+      <button id="installPwa" class="nav-install" type="button" hidden>O‘rnatish</button>
+      <a class="nav-admin" href="/boshliq/">Boshliq paneli</a>
+    </div>
+  </nav>
+  <div class="hero shell">
+    <div class="hero-copy">
+      <span class="eyebrow">BUXORO VILOYATI UCHUN RAQAMLI XIZMAT</span>
+      <h1>Shifokorga murojaat yuborish endi oson</h1>
+      <p>Matn yozing yoki ovozli xabar qoldiring. Zarur bo‘lsa joylashuvingizni ulashing. Murojaat rahbariyat nazoratida ko‘rib chiqiladi.</p>
+      <div class="hero-actions"><a class="btn primary" href="#murojaat">Murojaat yuborish</a><a class="btn ghost" href="#holat">Holatini tekshirish</a></div>
+      <div class="trust"><span><b>Matn</b> yoki ovoz</span><span><b>24/7</b> yuborish</span><span><b>Nazorat</b> raqami</span></div>
+    </div>
+    <aside class="hero-panel">
+      <div class="system"><i></i>Tizim ishlamoqda</div>
+      <h2>3 qadamda murojaat</h2>
+      <ol>
+        <li><b>1</b><span><strong>Shifokorni tanlang</strong><small>Kerakli mutaxassisni belgilang.</small></span></li>
+        <li><b>2</b><span><strong>Matn yoki ovoz yuboring</strong><small>Kamida bittasi yetarli.</small></span></li>
+        <li><b>3</b><span><strong>Holatini kuzating</strong><small>Nazorat raqami avtomatik beriladi.</small></span></li>
+      </ol>
+    </aside>
+  </div>
+</header>
+
+<main id="main">
+<section id="murojaat" class="section shell">
+  <div class="section-heading"><span class="eyebrow dark">ELEKTRON MUROJAAT</span><h2>Murojaatingizni yuboring</h2><p>Asosiy ma’lumotlarni kiriting. Murojaatni matn, ovoz yoki ikkalasi orqali yuborishingiz mumkin.</p></div>
+  <div class="card form-card">
+    <div id="formNotice" class="notice" aria-live="polite"></div>
+    <form id="appointmentForm" class="form-grid">
+      <div class="field"><label for="fullName">F.I.Sh. <em>*</em></label><input id="fullName" name="fullName" required maxlength="120" placeholder="Ism familiya"></div>
+      <div class="field"><label for="phone">Telefon raqami <em>*</em></label><input id="phone" name="phone" required inputmode="tel" maxlength="20" placeholder="+998 90 123 45 67"></div>
+      <div class="field full"><label for="doctorSelect">Shifokor / mutaxassis <em>*</em></label><select id="doctorSelect" name="doctorId" required><option value="">Mutaxassisni tanlang</option></select></div>
+      <div class="field full"><label for="topic">Murojaat turi</label><select id="topic" name="topic"><option>Umumiy murojaat</option><option>Shikoyat yoki bezovtalik</option><option>Maslahat olish</option><option>Qabulga yozilish</option><option>Davolanish bo‘yicha savol</option><option>Boshqa</option></select></div>
+      <div class="field full"><div class="row-title"><label for="description">Murojaat mazmuni</label><span id="counter">0 / 2000</span></div><textarea id="description" name="description" maxlength="2000" rows="7" placeholder="Masalan: Menda bir necha kundan beri ... bo‘yicha savol bor. Iltimos, ko‘rib chiqishingizni so‘rayman."></textarea></div>
+
+      <div class="voice full">
+        <div class="voice-head"><div><strong>Ovozli murojaat</strong><small>Gapirib yuborish qulay bo‘lsa, ovozingizni yozing. Maksimal 3 daqiqa.</small></div><span id="voiceTimer">00:00</span></div>
+        <div class="voice-actions"><button class="btn secondary" id="startVoice" type="button">🎙 Ovoz yozish</button><button class="btn danger" id="stopVoice" type="button" hidden>Yozishni to‘xtatish</button><button class="btn secondary" id="deleteVoice" type="button" hidden>Ovozni o‘chirish</button></div>
+        <label id="voiceFallback" class="file-fallback" hidden>Ovoz yozish ishlamasa, audio fayl tanlang <input id="voiceFile" type="file" accept="audio/*"></label>
+        <div id="voiceStatus" class="muted">Ovoz yozilmagan.</div><audio id="voicePreview" controls hidden></audio>
+      </div>
+
+      <details class="optional full"><summary>Qabul sanasi va vaqtini ham belgilamoqchiman <span>Ixtiyoriy</span></summary><div class="optional-grid"><div class="field"><label for="appointmentDate">Qabul sanasi</label><input type="date" id="appointmentDate" name="date"></div><div class="field"><label for="appointmentTime">Qabul vaqti</label><select id="appointmentTime" name="time"><option value="">Vaqtni tanlang</option><option>09:00</option><option>10:00</option><option>11:00</option><option>14:00</option><option>15:00</option><option>16:00</option></select></div></div></details>
+
+      <div class="help full"><label><input id="needHelp" type="checkbox" name="needHelp"><span><strong>Menga qo‘shimcha yordam kerak</strong><small>Zarur bo‘lsa joylashuvingizni ham ulashing.</small></span></label><div id="locationBox" hidden><input id="latitude" name="latitude" type="hidden"><input id="longitude" name="longitude" type="hidden"><input id="locationAccuracy" name="locationAccuracy" type="hidden"><button id="shareLocation" class="btn secondary" type="button">📍 Joylashuvimni ulash</button><span id="locationStatus" class="muted">Joylashuv yuborilmagan.</span></div></div>
+      <label class="consent full"><input id="consent" type="checkbox" required><span><a href="/privacy/" target="_blank">Maxfiylik siyosati</a> bilan tanishdim va murojaatni ko‘rib chiqishga roziman.</span></label>
+      <div class="full submit-zone"><button class="btn primary submit" type="submit">Murojaatni yuborish</button><small>Hayot uchun xavfli shoshilinch holatda 103 xizmatiga murojaat qiling.</small></div>
+    </form>
+  </div>
+</section>
+
+<section id="shifokorlar" class="section soft"><div class="shell"><div class="section-heading"><span class="eyebrow dark">MUTAXASSISLAR</span><h2>Shifokorlar</h2><p>Murojaat yuborish mumkin bo‘lgan mutaxassislar.</p></div><div id="doctorList" class="doctor-grid"></div></div></section>
+
+<section id="holat" class="section shell"><div class="section-heading"><span class="eyebrow dark">NAZORAT</span><h2>Murojaat holatini tekshirish</h2><p>Nazorat raqamingiz va telefon raqamingizni kiriting.</p></div><div class="card status-card"><div id="recentReference" class="recent" hidden></div><form id="statusForm" class="status-form"><div class="field"><label>Nazorat raqami</label><input id="statusReference" required placeholder="Q-260928-ABC123"></div><div class="field"><label>Telefon raqami</label><input id="statusPhone" required inputmode="tel" placeholder="+998 90 123 45 67"></div><button class="btn primary" type="submit">Holatni tekshirish</button></form><div id="statusResult"></div></div></section>
+</main>
+<footer><div class="shell footer-inner"><span>© 2026 Buxoro Tibbiyot Tizimi</span><span><a href="/privacy/">Maxfiylik</a> · <a href="/support/">Yordam</a></span></div></footer>
+<script src="/assets/app.js?v=3.0.1" defer></script>
+</body></html>
