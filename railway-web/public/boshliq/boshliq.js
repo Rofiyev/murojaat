@@ -23,7 +23,8 @@ async function loadAll(){
   try{
     const j=await api('/api/dashboard');appointments=j.appointments||[];doctors=j.doctors||[];institutions=j.institutions||[];analytics=j.analytics||{};render();
   }catch(e){
-    if(/Avtorizatsiya|ruxsat/i.test(e.message)){token='';sessionStorage.removeItem('buxoro-admin-token');showLogin()}else console.error(e);
+    if(/Avtorizatsiya|ruxsat/i.test(e.message)){token='';sessionStorage.removeItem('buxoro-admin-token');showLogin()}
+    else console.error(e);
   }
 }
 function renderStats(){
@@ -58,22 +59,22 @@ function renderTable(){
 }
 function renderAnalytics(){
   const dirs=(analytics.byDirection||[]).slice(0,7),max=Math.max(1,...dirs.map(x=>x.count));
-  $('#directionBars').innerHTML=dirs.map(x=>`<div class="bar-row"><span>${esc(x.name)}</span><div><i style="width:${Math.max(4,x.count/max*100)}%"></i></div><b>${x.count}</b></div>`).join('')||'<p class="muted">Ma‘lumot yetarli emas.</p>';
-  $('#institutionRanking').innerHTML=(analytics.institutions||[]).map(x=>`<div class="ranking-row"><b>${x.rank}</b><span>${esc(x.name)}</span><small>${x.done}/${x.total} hal qilingan</small><strong>${x.resolutionRate}%</strong><em>${x.avgResolutionHours} soat</em></div>`).join('')||'<p class="muted">Ma‘lumot yetarli emas.</p>';
+  $('#directionBars').innerHTML=dirs.map(x=>`<div class="bar-row"><span>${esc(x.name)}</span><div><i style="width:${Math.max(4,x.count/max*100)}%"></i></div><b>${x.count}</b></div>`).join('')||'<p class="muted">Ma’lumot yetarli emas.</p>';
+  $('#institutionRanking').innerHTML=(analytics.institutions||[]).map(x=>`<div class="ranking-row"><b>${x.rank}</b><span>${esc(x.name)}</span><small>${x.done}/${x.total} hal qilingan</small><strong>${x.resolutionRate}%</strong><em>${x.avgResolutionHours} soat</em></div>`).join('')||'<p class="muted">Ma’lumot yetarli emas.</p>';
 }
 function renderInstitutions(){
   $('#institutionAdminList').innerHTML=institutions.map(i=>{
     const count=doctors.filter(d=>d.institutionId===i.id).length;
-    return `<div class="institution-row"><span><b>${esc(i.name)}</b><br><small>${count} ta faol shifokor</small></span><span class="institution-actions"><button class="link-btn" data-kiosk="${esc(i.id)}">QR/Kiosk</button><button class="link-btn" data-cred="${esc(i.id)}">Login yaratish</button><button class="link-btn" data-inst="${esc(i.id)}">O’cirish</button></span></div>`;
+    return `<div class="institution-row"><span><b>${esc(i.name)}</b><br><small>${count} ta faol shifokor</small></span><span class="institution-actions"><button class="link-btn" data-kiosk="${esc(i.id)}">QR/Kiosk</button><button class="link-btn" data-cred="${esc(i.id)}">Login yaratish</button><button class="link-btn" data-inst="${esc(i.id)}">O‘chirish</button></span></div>`;
   }).join('')||'<p class="muted">Muassasalar yo‘q.</p>';
   $('#institutionAdminList').querySelectorAll('[data-kiosk]').forEach(b=>b.onclick=()=>showKiosk(b.dataset.kiosk));
   $('#institutionAdminList').querySelectorAll('[data-cred]').forEach(b=>b.onclick=()=>credentials('institution',b.dataset.cred));
-  $('#institutionAdminList').querySelectorAll('[data-inst]').forEach(b=>b.onclick=async()=>{if(!confirm('Muassasa ro‘yxatdan chiqarilsinmi?'))return;try{await api('/api/institutions/'+b.dataset.inst,method:'DELETE'});await loadAll()}catch(e){alert(e.message)}});
+  $('#institutionAdminList').querySelectorAll('[data-inst]').forEach(b=>b.onclick=async()=>{if(!confirm('Muassasa ro‘yxatdan chiqarilsinmi?'))return;try{await api('/api/institutions/'+b.dataset.inst,{method:'DELETE'});await loadAll()}catch(e){alert(e.message)}});
 }
 function renderDoctors(){
-  $('#doctorAdminList').innerHTML=doctors.map(d=>`<div class="doctor-row"><span><b>${esc(d.name)}</b><br><small>${esc(d.specialty)} · ${esc(d.institutionName)}</small></span><span class="institution-actions"><button class="link-btn" data-doccred="${esc(d.id)}">Login yaratish</button><button class="link-btn" data-doc="${esc(d.id)}">O‗chirish</button></span></div>`).join('')||'<p class="muted">Shifokorlar yo‘q.</p>';
+  $('#doctorAdminList').innerHTML=doctors.map(d=>`<div class="doctor-row"><span><b>${esc(d.name)}</b><br><small>${esc(d.specialty)} · ${esc(d.institutionName)}</small></span><span class="institution-actions"><button class="link-btn" data-doccred="${esc(d.id)}">Login yaratish</button><button class="link-btn" data-doc="${esc(d.id)}">O‘chirish</button></span></div>`).join('')||'<p class="muted">Shifokorlar yo‘q.</p>';
   $('#doctorAdminList').querySelectorAll('[data-doccred]').forEach(b=>b.onclick=()=>credentials('doctor',b.dataset.doccred));
-  $('#doctorAdminList').querySelectorAll('[data-doc]').forEach(b=>b.onclick=async()=>{if(!confirm('Shifokorni ro‘yxatdan chiqarilsinmi?'))return;try{await api('/api/doctors/'+b.dataset.doc,method:'DELETE'});await loadAll()}catch(e){alert(e.message)}});
+  $('#doctorAdminList').querySelectorAll('[data-doc]').forEach(b=>b.onclick=async()=>{if(!confirm('Shifokorni ro‘yxatdan chiqarilsinmi?'))return;try{await api('/api/doctors/'+b.dataset.doc,{method:'DELETE'});await loadAll()}catch(e){alert(e.message)}});
 }
 function render(){renderStats();renderInstitutionOptions();renderTable();renderAnalytics();renderInstitutions();renderDoctors()}
 async function credentials(role,targetId){
@@ -85,15 +86,19 @@ async function credentials(role,targetId){
   }catch(e){alert(e.message)}
 }
 function showKiosk(id){
-  const inst=institutions.find(x=>x.id===id),url=`${location.origin}/kiosk/?institution=${encodeURIComponent(id)}`;
+  const inst=institutions.find(x=>x.id===id);const url=`${location.origin}/kiosk/?institution=${encodeURIComponent(id)}`;
   $('#credentialBody').innerHTML=`<h2>${esc(inst?.name||'Muassasa')} — Kiosk</h2><img class="success-qr" src="/api/qr?kiosk=${encodeURIComponent(id)}" alt="Kiosk QR"><p class="muted">${esc(url)}</p><div class="quick-actions"><button id="copyKiosk" class="btn secondary">Havolani nusxalash</button><a class="btn primary" href="${esc(url)}" target="_blank">Kioskni ochish</a></div>`;
   $('#credentialModal').classList.add('show');$('#copyKiosk').onclick=()=>navigator.clipboard.writeText(url);
 }
 async function loadEvents(id){
   try{const {events}=await api('/api/appointments/'+id+'/events');$('#timeline').innerHTML=events.map(e=>`<div class="timeline-item"><b>${esc(eventLabels[e.eventType]||e.eventType)}</b>${e.oldStatus&&e.newStatus&&e.oldStatus!==e.newStatus?`<div>${esc(labels[e.oldStatus]||e.oldStatus)} → ${esc(labels[e.newStatus]||e.newStatus)}</div>`:''}${e.note?`<div>${esc(e.note)}</div>`:''}<small>${new Date(e.createdAt).toLocaleString('uz-UZ')}</small></div>`).join('')||'<div class="muted">Tarix mavjud emas.</div>'}catch{$('#timeline').innerHTML='<div class="muted">Tarixni yuklab bo‘lmadi.</div>'}
 }
-async function loadAudio(id){try{const r=await fetch('/api/appointments/'+id+'/audio',{headers:{authorization:'Bearer '+token}});if(!r.ok)throw new Error('Ovozni yuklab bo‘hmadi.');const blob=await r.blob();if(audioUrl)URL.revokeObjectURL(audioUrl);audioUrl=URL.createObjectURL(blob);const a=$('#audioPlayer');a.src=audioUrl;a.hidden=false;a.play().catch(()=>{})}catch(e){alert(e.message)}}
-async function downloadAttachment(id,name){try{const r=await fetch('/api/appointments/'+id+'/attachment',{headers:{authorization:'Bearer '+token}});if(!r.ok)throw new Error('Faylni yuklab bo‘lmadi.');const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name||'biriktirma';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}catch(e){alert(e.message)}}
+async function loadAudio(id){
+  try{const r=await fetch('/api/appointments/'+id+'/audio',{headers:{authorization:'Bearer '+token}});if(!r.ok)throw new Error('Ovozni yuklab bo‘lmadi.');const blob=await r.blob();if(audioUrl)URL.revokeObjectURL(audioUrl);audioUrl=URL.createObjectURL(blob);const a=$('#audioPlayer');a.src=audioUrl;a.hidden=false;a.play().catch(()=>{})}catch(e){alert(e.message)}
+}
+async function downloadAttachment(id,name){
+  try{const r=await fetch('/api/appointments/'+id+'/attachment',{headers:{authorization:'Bearer '+token}});if(!r.ok)throw new Error('Faylni yuklab bo‘lmadi.');const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name||'biriktirma';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}catch(e){alert(e.message)}
+}
 function closeModal(){if(audioUrl)URL.revokeObjectURL(audioUrl);audioUrl='';$('#detailModal').classList.remove('show')}
 function openDetail(id){
   const x=appointments.find(a=>a.id===id);if(!x)return;
@@ -102,7 +107,7 @@ function openDetail(id){
   <div class="detail-content"><b>Muassasa</b><p>${esc(x.institutionName||'—')}</p><b>Yo‘nalish</b><p>${esc(x.direction||'—')}</p><b>Murojaat turi</b><p>${esc(x.topic||'—')}</p><b>Murojaat mazmuni</b><p>${x.description?esc(x.description).replaceAll('\n','<br>'):'Matn kiritilmagan.'}</p></div>
   ${x.audioSize?'<div class="audio-box"><b>🎙 Ovozli murojaat</b><br><button id="audioBtn" class="btn secondary">Tinglash</button><audio id="audioPlayer" controls hidden></audio></div>':''}
   ${x.attachmentSize?`<div class="audio-box"><b>📎 Biriktirilgan fayl</b><p>${esc(x.attachmentName)} · ${Math.round(x.attachmentSize/1024)} KB</p><button id="fileBtn" class="btn secondary">Faylni yuklash</button></div>`:''}
-  ${x.latitude!=null?`<div class="detail-content"><b>�M Joylashuv</b><p><a target="_blank" rel="noopener" href="https://www.google.com/maps?q=${encodeURIComponent(x.latitude+','+x.longitude)}">Xaritada ochish</a></p></div>`:''}
+  ${x.latitude!=null?`<div class="detail-content"><b>📍 Joylashuv</b><p><a target="_blank" rel="noopener" href="https://www.google.com/maps?q=${encodeURIComponent(x.latitude+','+x.longitude)}">Xaritada ochish</a></p></div>`:''}
   <div class="detail-grid"><div class="detail-item"><span>Telefon</span><b><a href="tel:${esc(x.phone)}">${esc(x.phone)}</a></b></div><div class="detail-item"><span>Shifokor</span><b>${esc(x.doctorName||'—')}</b></div><div class="detail-item"><span>Yuborilgan</span><b>${new Date(x.createdAt).toLocaleString('uz-UZ')}</b></div><div class="detail-item"><span>Yoshi</span><b>${x.ageHours} soat</b></div></div>
   <div class="detail-form"><label>Shifokor<select id="detailDoctor">${options}</select></label><label>Holat<select id="detailStatus"><option value="yangi">Yangi</option><option value="jarayonda">Jarayonda</option><option value="hal_qilindi">Hal qilingan</option><option value="rad_etildi">Rad etilgan</option></select></label><label>Bemorga javob<textarea id="detailResponse" rows="5">${esc(x.response||'')}</textarea></label><div class="quick-actions"><button id="takeWork" class="btn secondary">Jarayonga olish</button><button id="markDone" class="btn secondary">Hal qilindi</button><button id="saveDetail" class="btn primary">Saqlash</button></div></div>
   <div class="detail-content"><b>Harakatlar tarixi</b><div id="timeline" class="timeline">Yuklanmoqda…</div></div>`;
@@ -116,7 +121,7 @@ async function downloadReport(kind){
   let url='/api/reports/'+kind;const p=new URLSearchParams();if($('#institutionFilter').value)p.set('institutionId',$('#institutionFilter').value);if(p.toString())url+='?'+p;
   try{const r=await fetch(url,{headers:{authorization:'Bearer '+token}});if(!r.ok)throw new Error('Hisobotni yuklab bo‘lmadi.');const blob=await r.blob(),obj=URL.createObjectURL(blob),a=document.createElement('a');a.href=obj;a.download=kind==='excel'?'murojaatlar-hisobot.xlsx':'murojaatlar-hisobot.pdf';a.click();setTimeout(()=>URL.revokeObjectURL(obj),1000)}catch(e){alert(e.message)}
 }
-function startAutoRefresh(){stopAutoRefresh();refreshTimer=setInterval(()=>{if($('#autoRefresh')?.checked&&!document.hidden)loadAll()},3000)}
+function startAutoRefresh(){stopAutoRefresh();refreshTimer=setInterval(()=>{if($('#autoRefresh')?.checked&&!document.hidden)loadAll()},30000)}
 function stopAutoRefresh(){if(refreshTimer)clearInterval(refreshTimer);refreshTimer=null}
 
 $('#loginForm').addEventListener('submit',loginSubmit);$('#logout').onclick=()=>{token='';sessionStorage.removeItem('buxoro-admin-token');showLogin()};$('#refresh').onclick=loadAll;
