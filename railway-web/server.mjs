@@ -4,7 +4,7 @@ import pg from 'pg';
 import QRCode from 'qrcode';
 import webpush from 'web-push';
 import PDFDocument from 'pdfkit';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import { createHmac, randomBytes, randomUUID, scryptSync, timingSafeEqual } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -807,10 +807,20 @@ app.get('/api/reports/excel', requireRoles('admin','institution'), async (req,re
     ['Hal qilingan',analytics.done],['24 soatdan oshgan',analytics.overdue24],['48 soatdan oshgan',analytics.overdue48],
     ['O‘rtacha hal qilish vaqti (soat)',analytics.avgResolutionHours]
   ];
-  const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(data),'Murojaatlar');
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(summary),'Xulosa');
-  const buf=XLSX.write(wb,{type:'buffer',bookType:'xlsx'});
+  const wb=new ExcelJS.Workbook();
+  wb.creator='Buxoro Tibbiyot Tizimi';
+  const ws=wb.addWorksheet('Murojaatlar');
+  const keys=data.length?Object.keys(data[0]):['Nazorat raqami','F.I.Sh.','Telefon','Muassasa','Shifokor','Yo‘nalish','Murojaat turi','Holat','Yordam','Yuborilgan','Hal qilingan','Hal qilish vaqti (soat)'];
+  ws.columns=keys.map(k=>({header:k,key:k,width:Math.min(40,Math.max(14,k.length+3))}));
+  data.forEach(row=>ws.addRow(row));
+  ws.getRow(1).font={bold:true};
+  ws.views=[{state:'frozen',ySplit:1}];
+  ws.autoFilter={from:{row:1,column:1},to:{row:1,column:keys.length}};
+  const sum=wb.addWorksheet('Xulosa');
+  summary.forEach(r=>sum.addRow(r));
+  sum.getRow(1).font={bold:true};
+  sum.getColumn(1).width=34;sum.getColumn(2).width=20;
+  const buf=Buffer.from(await wb.xlsx.writeBuffer());
   res.set({'Content-Type':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','Content-Disposition':'attachment; filename="murojaatlar-hisobot.xlsx"'}).send(buf);
 });
 app.get('/api/reports/pdf', requireRoles('admin','institution'), async (req,res)=>{
