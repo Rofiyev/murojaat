@@ -306,7 +306,12 @@ app.use(express.static(publicDir, {
     else if (filePath.includes(`${path.sep}assets${path.sep}`)) res.setHeader('Cache-Control', 'public, max-age=3600');
   }
 }));
-app.get('*path', (_req, res) => res.sendFile(path.join(publicDir, 'index.html')));
+app.use((req, res, next) => {
+  if (req.method === 'GET' && !req.path.startsWith('/api/')) {
+    return res.sendFile(path.join(publicDir, 'index.html'));
+  }
+  next();
+});
 
 app.use((err, _req, res, _next) => {
   if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') return apiError(res, 413, 'Ovozli murojaat 3 MB dan oshmasligi kerak.');
