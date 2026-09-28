@@ -1,17 +1,1 @@
-{
-  "name":"Buxoro Tibbiyot Tizimi",
-  "short_name":"Buxoro Tibbiyot",
-  "description":"Elektron tibbiy murojaat xizmati",
-  "start_url":"/?source=pwa",
-  "scope":"/",
-  "display":"standalone",
-  "background_color":"#f5f8fb",
-  "theme_color":"#075985",
-  "lang":"uz",
-  "icons":[{"src":"/assets/icon_app.png","sizes":"any","type":"image/png","purpose":"any maskable"}],
-  "shortcuts":[
-    {"name":"Murojaat yuborish","short_name":"Murojaat","url":"/#murojaat"},
-    {"name":"Holatini tekshirish","short_name":"Holat","url":"/#holat"},
-    {"name":"Kiosk rejimi","short_name":"Kiosk","url":"/kiosk/"}
-  ]
-}
+{"name":"Buxoro Tibbiyot Tizimi","short_name":"Buxoro Tibbiyot","description":"Elektron tibbiy murojaat xizmati","start_url":"/?source=pwa","scope":"/","display":"standalone","background_color":"#f5f8fb","theme_color":"#075985","lang":"uz","icons":[{"src":"/assets/icon_app.png","sizes":"any","type":"image/png","purpose":"any maskable"}],"shortcuts":[{"name":"Murojaat yuborish","short_name":"Murojaat","url":"/#murojaat"},{"name":"Holatini tekshirish","short_name":"Holat","url":"/#holat"},{"name":"Kiosk rejimi","short_name":"Kiosk","url":"/kiosk/"},{"name":"Muassasa kabineti","short_name":"Muassasa","url":"/muassasa/"},{"name":"Shifokor kabineti","short_name":"Shifokor","url":"/shifokor/"}]}
