@@ -5,10 +5,12 @@
   "type": "module",
   "engines": { "node": ">=20" },
   "scripts": {
+    "prestart": "node extract-public.mjs",
     "start": "node server.mjs",
-    "check": "node --check server.mjs"
+    "check": "node --check server.mjs && node --check extract-public.mjs"
   },
   "dependencies": {
+    "adm-zip": "^0.5.16",
     "express": "^5.1.0",
     "multer": "^2.0.2",
     "pg": "^8.16.3"
