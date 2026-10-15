@@ -1,3 +1,4 @@
+import { mountSsbSummary } from './ssb-summary.mjs';
 import express from 'express';
 import multer from 'multer';
 import pg from 'pg';
@@ -482,6 +483,8 @@ async function initDb() {
     }
   }
 }
+
+mountSsbSummary(app,pool);
 
 app.get('/api/health', async (_req, res) => {
   try {
