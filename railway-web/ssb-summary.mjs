@@ -15,7 +15,7 @@ export function mountSsbSummary(app,pool) {
     if (!validSummaryToken(req.headers.authorization,process.env.SSB_SUMMARY_TOKEN)) return res.status(401).json({error:'Unauthorized'});
     let bounds;try {bounds=monthBounds(String(req.query.month||''))} catch {return res.status(400).json({error:'Invalid month'})}
     try {
-      const {rows}=await pool.query(`SELECT COALESCE(a.institution_id,'unassigned') AS id,
+      const {rows}=await pool.query(`SELECT COALESCE(a.institution_id::text,'unassigned') AS id,
         COALESCE(i.name,MAX(a.institution_name),'Biriktirilmagan') AS name,
         COUNT(*)::int AS total,
         COUNT(*) FILTER(WHERE a.status='yangi')::int AS new_count,
@@ -29,6 +29,6 @@ export function mountSsbSummary(app,pool) {
         GROUP BY a.institution_id,i.name ORDER BY total DESC`,bounds);
       res.json({ok:true,source:'murojaat',month:req.query.month,generatedAt:new Date().toISOString(),rows,
         totals:rows.reduce((out,r)=>{for(const k of Object.keys(out))out[k]+=r[k];return out},{total:0,new_count:0,in_progress:0,resolved:0,rejected:0,overdue48:0})});
-    }catch {res.status(503).json({error:'Summary unavailable'})}
+    }catch(error) {console.error('SSB summary database error',error.code||'unknown');res.status(503).json({error:'Summary unavailable'})}
   });
 }
